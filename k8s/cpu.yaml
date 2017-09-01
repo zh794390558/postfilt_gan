@@ -30,7 +30,9 @@ spec:
     - mountPath: /gfs
       name: nfs0
     - mountPath: '/tmp'
-      name: hostpath1
+      name: tmp 
+    - mountPath: '/lustre'
+      name: lustre 
   dnsPolicy: ClusterFirst
   restartPolicy: Never
   terminationGracePeriodSeconds: 1
@@ -42,4 +44,7 @@ spec:
       readOnly: false
   - hostPath:
       path: /tmp
-    name: hostpath1
+    name: tmp 
+  - hostPath:
+      path: /lustre
+    name: lustre
