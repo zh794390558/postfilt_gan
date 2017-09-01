@@ -1,3 +1,4 @@
+from __future__ import print_function
 import torch
 import torch.utils.data
 import numpy as np
@@ -86,4 +87,4 @@ if __name__ == "__main__":
                             in_dim, out_dim, batch_size, False, 3)
     for _ in range(1):
         for i, (x_data, y_data) in enumerate(data_loader):
-            print i, x_data.size(), y_data.size()
+            print(i, x_data.size(), y_data.size())
