@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gan-service
+  labels:
+    name: post-gan
+    role: service
+spec:
+    type: NodePort
+    selector:
+      name: post-gan 
+    ports:
+      - port: 80 
+        targetPort: 6006 
+        nodePort: 31111

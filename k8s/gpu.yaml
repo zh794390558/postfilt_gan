@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  name: gan-pytorch
+  labels:
+     name: post-gan
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: alpha.kubernetes.io/nvidia-gpu-name
+            operator: In
+            values:
+            - 1080Ti
+  containers:
+  - args:
+    - echo 'hello';sleep 60d
+    command:
+    - /bin/bash
+    - -c
+    image: harbor.ail.unisound.com/zhanghui/pytorch:v0.2:latest 
+    ports:
+    - containerPort: 6006
+      protocol: TCP
+    - containerPort: 8888
+      protocol: TCP
+    imagePullPolicy: Always 
+    name: gan-gpu 
+    resources:
+      limits:
+        alpha.kubernetes.io/nvidia-gpu: "1"
+    volumeMounts:
+    - mountPath: /gfs
+      name: nfs0
+    - mountPath: '/tmp'
+      name: hostpath1
+    - mountPath: '/lustre'
+      name: lustre
+    - mountPath: /usr/local/nvidia/lib64
+      name: nvidia-libs-volume
+    - mountPath: /usr/local/nvidia/bin
+      name: nvidia-libs-tool
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 1
+  volumes:
+  - name: nfs0
+    nfs:
+      path: /volume1/gfs
+      server: 10.10.10.251
+  - hostPath:
+      path: /lustre
+    name: lustre
+  - hostPath:
+      path: /tmp
+    name: hostpath1
+  - hostPath:
+      path: /usr/local/nvidia/lib64
+    name: nvidia-libs-volume
+  - hostPath:
+      path: /usr/local/nvidia/bin
+    name: nvidia-libs-tool
+
