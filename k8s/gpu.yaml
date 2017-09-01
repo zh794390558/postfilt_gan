@@ -21,7 +21,7 @@ spec:
     command:
     - /bin/bash
     - -c
-    image: harbor.ail.unisound.com/zhanghui/pytorch:v0.2:latest 
+    image:  harbor.ail.unisound.com/zhanghui/pytorch-v0.2:latest
     ports:
     - containerPort: 6006
       protocol: TCP

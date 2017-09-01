@@ -1,4 +1,4 @@
-FROM harbor.ail.unisound.com/liuqs_public/pytorch:v0.2 
+FROM harbor.ail.unisound.com/liuqs_public/pytorch:v0.2
 
 COPY sources.list /etc/apt
 RUN groupadd -f -g 800  zhanghui && \

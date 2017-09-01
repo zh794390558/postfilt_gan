@@ -17,10 +17,10 @@ else
 fi
 
 
-docker build --force-rm=false --no-cache=false -f $FILE -t harbor.ail.unisound.com/zhanghui/pytorch:v0.2:latest 
+docker build --force-rm=false --no-cache=false -f $FILE -t harbor.ail.unisound.com/zhanghui/pytorch-v0.2:latest docker
 
 if [ $? != 0 ]; then
 	exit 1
 fi
 
-docker push harbor.ail.unisound.com/zhanghui/pytorch:v0.2:latest 
+docker push harbor.ail.unisound.com/zhanghui/pytorch-v0.2:latest
