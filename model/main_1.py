@@ -97,23 +97,24 @@ def train(netD, netG, data_loader, opt):
             D_G_z2 = output.data.mean()
             optimizerG.step()
 
-            print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                %(epoch, opt.niter, i, len(data_loader),
-            errD, errG.data[0], D_x, D_G_z1, D_G_z2))
-            fake = netG(noise, pred_data)
-            fake = fake + pred_data
-            fake = fake.data.cpu().numpy()
-            fake = fake.reshape(opt.mgcDim, -1)
-            fake = fake[:,rand_int:rand_int+60]
+            if i % 100 == 0:
+                print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
+                    %(epoch, opt.niter, i, len(data_loader),
+                errD, errG.data[0], D_x, D_G_z1, D_G_z2))
+                fake = netG(noise, pred_data)
+                fake = fake + pred_data
+                fake = fake.data.cpu().numpy()
+                fake = fake.reshape(opt.mgcDim, -1)
+                fake = fake[:,rand_int:rand_int+60]
 
-            pred = pred_data.data.cpu().numpy()
-            pred = pred.reshape(opt.mgcDim, -1)
-            pred = pred[:,rand_int:rand_int+60]
+                pred = pred_data.data.cpu().numpy()
+                pred = pred.reshape(opt.mgcDim, -1)
+                pred = pred[:,rand_int:rand_int+60]
 
-            real = real_data.cpu().numpy()
-            real = real.reshape(opt.mgcDim, -1)
-            real = real[:,rand_int:rand_int+60]
-            plot_feats(real, pred, fake,  epoch, i, opt.outf)
+                real = real_data.cpu().numpy()
+                real = real.reshape(opt.mgcDim, -1)
+                real = real[:,rand_int:rand_int+60]
+                plot_feats(real, pred, fake,  epoch, i, opt.outf)
 
             batch_data = []
 
@@ -163,6 +164,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.0001, help='learning rate, default=0.0001')
     parser.add_argument('--beta1', type=float, default=0.9, help='beta1 for adam. default=0.9')
     parser.add_argument('--cuda', action='store_true', help='enables cuda')
+    parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
     parser.add_argument('--netG', default='', help="path to netG (to continue training)")
     parser.add_argument('--netD', default='', help="path to netD (to continue training)")
     parser.add_argument('--outf', default='.', help='folder to output images and model checkpoints')
@@ -217,7 +219,7 @@ if __name__ == "__main__":
     print(netG)
 
     # define the discriminator
-    netD = define_netD()
+    netD = define_netD(opt.ngpu)
     if opt.netD != '':
         netD.load_state_dict(torch.load(opt.netD))
         print('Use chekpoint:{}'.format(opt.netD))

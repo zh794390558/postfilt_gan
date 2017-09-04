@@ -14,8 +14,8 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.01)
         m.bias.data.fill_(0)
 
-def define_netD():
-    netD = _netD()
+def define_netD(ngpu=0):
+    netD = _netD(ngpu)
     netD.apply(weights_init)
     return netD
 
@@ -79,8 +79,9 @@ class _netG(nn.Module):
 
 
 class _netD(nn.Module):
-    def __init__(self):
+    def __init__(self, ngpu=0):
         super(_netD, self).__init__()
+        self.ngpu = ngpu
 
         # Convolutional block
         self.conv1 = nn.Sequential(
@@ -103,6 +104,7 @@ class _netD(nn.Module):
             nn.Conv2d(256, 128, 2, stride=2, bias=True),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True)
+
         )
 
         # after flatten [batch_size x 128 * 1 * 1]
@@ -114,7 +116,10 @@ class _netD(nn.Module):
         # final output shape [batch_size x 1]
 
     def forward(self, mgc_input):
-        x = self.conv1(mgc_input)
+        if isinstance(mgc_input, torch.cuda.FloatTensor) and self.ngpu > 1:
+            x = nn.parallel.data_parallel(self.conv1, mgc_input, range(self.ngpu))
+        else:
+            x = self.conv1(mgc_input)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return x
