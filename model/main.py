@@ -131,7 +131,8 @@ def test(netG, opt):
         if ext == '.cmp':
             print(fname)
             cmp_file = os.path.join(test_dir, f)
-            ac_data = read_binary_file(cmp_file, dim=47)
+            ac_data = read_binary_file(cmp_file, dim=41)
+            print(ac_data.size())
             ac_data = torch.FloatTensor(ac_data)
             noise = torch.FloatTensor(ac_data.size(0), nz)
             if opt.cuda:
