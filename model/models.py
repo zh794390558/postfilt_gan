@@ -32,7 +32,7 @@ class _netG(nn.Module):
     def __init__(self, in_ch):
         super(_netG, self).__init__()
         self.in_ch = in_ch
-        
+
         # Convolutional 1
         self.conv1 = nn.Sequential(
             # input shape [batch_size x 2 (noise + input mel-cepstrum) x 40 (mgc dim) x T]
@@ -88,22 +88,23 @@ class _netD(nn.Module):
             nn.Conv2d(1, 64, 5, stride=2, bias=True),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, inplace=True),
-            
+
             # shape [batch_size x 64 x 18 x 18]
             nn.Conv2d(64, 128, 5, stride=2, bias=True),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True),
-            
+
             # shape [batch_size x 128 x 7 x 7]
             nn.Conv2d(128, 256, 5, stride=2, bias=True),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True),
 
             # shape [batch_size x 256 x 3 x 3]
-            nn.Conv2d(256, 128, 3, stride=2, bias=True),
+            nn.Conv2d(256, 128, 2, stride=2, bias=True),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True)
         )
+
         # after flatten [batch_size x 128 * 1 * 1]
         # Dense block
         self.fc1 = nn.Sequential(

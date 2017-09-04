@@ -2,17 +2,17 @@ import numpy as np
 # To run background with matplotlib
 # use these two lines
 import matplotlib as mpl
-mpl.use('Agg') 
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 def plot_feats(actual_feats, predicted_feats, generated_feats, epoch, index, checkpoint_dir):
     plt.figure()
     plt.subplot(1,3,1)
-    plt.imshow(actual_feats)
+    plt.imshow(actual_feats) # nat
     plt.subplot(1,3,2)
-    plt.imshow(generated_feats)
+    plt.imshow(generated_feats) # G
     plt.subplot(1,3,3)
-    plt.imshow(predicted_feats)
+    plt.imshow(predicted_feats) # syn
     plt.savefig('{}/figures/pulses_epoch{}_index{}.png'.format(checkpoint_dir, epoch, index))
     plt.close()
 

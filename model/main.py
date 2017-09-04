@@ -23,14 +23,14 @@ def train(netD, netG, data_loader, opt):
     fake_label = 0
 
     # cost criterion
-    #criterion = nn.BCELoss() # normal gan 
+    #criterion = nn.BCELoss() # normal gan
     criterion = nn.MSELoss() # lsgan
 
     if opt.cuda:
         netD.cuda()
         netG.cuda()
         criterion.cuda()
-    
+
     # setup optimizer
     optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
     optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
@@ -50,7 +50,7 @@ def train(netD, netG, data_loader, opt):
                     #################################
                     # (1) Updata D network: maximize log(D(x)) + log(1 - D(G(z)))
                     #################################
-                    # train with real 
+                    # train with real
                     real_data, pred_data = d
 
                     # crop the tensor to fixed size
@@ -65,19 +65,19 @@ def train(netD, netG, data_loader, opt):
 
                     pred_data = Variable(pred_data, requires_grad=False)
                     real_data_crop = Variable(real_data_crop, requires_grad=False)
-                    
+
                     output = netD(real_data_crop)
                     errD_real = criterion(output, label)
                     errD_real.backward()
                     D_x = output.data.mean()
 
-                    # train with fake 
+                    # train with fake
                     noise = torch.FloatTensor(real_data.size()).normal_(0,1)
                     if opt.cuda:
                         noise = noise.cuda()
                     noise = Variable(noise, requires_grad=False)
                     fake = netG(noise, pred_data)
-                    # add the residual to the tts predicted data 
+                    # add the residual to the tts predicted data
                     fake = fake + pred_data
                     label.data.fill_(fake_label)
                     # crop the tensor to fixed size
@@ -89,12 +89,12 @@ def train(netD, netG, data_loader, opt):
                     errD = errD_real.data[0] + errD_fake.data[0]
                 # update the discriminator on mini batch
                 optimizerD.step()
-                
+
                 netG.zero_grad()
                 for d in batch_data:
                     real_data, pred_data = d
                     rand_int = random.randint(0,real_data.size(-1) - opt.mgcDim)
-                    # train with fake 
+                    # train with fake
                     noise = torch.FloatTensor(real_data.size()).normal_(0,1)
                     if opt.cuda:
                         pred_data = pred_data.cuda()
@@ -102,14 +102,14 @@ def train(netD, netG, data_loader, opt):
                     pred_data = Variable(pred_data, requires_grad=False)
                     noise = Variable(noise, requires_grad=False)
                     fake = netG(noise, pred_data)
-                    # add the residual to the tts predicted data 
+                    # add the residual to the tts predicted data
                     fake = fake + pred_data
                     label.data.fill_(fake_label)
                     # crop the tensor to fixed size
                     fake_crop = fake[:,:,:,rand_int:rand_int+opt.mgcDim]
                     #print(fake_crop.size())
                     # crop the tensor to fixed size
-                    
+
                     ############################
                     # (2) Update G network: maximize log(D(G(z)))
                     ############################
@@ -121,26 +121,26 @@ def train(netD, netG, data_loader, opt):
                 optimizerG.step()
 
                 print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                    %(epoch, opt.niter, i, len(data_loader), 
+                    %(epoch, opt.niter, i, len(data_loader),
                 errD, errG.data[0], D_x, D_G_z1, D_G_z2))
                 fake = netG(noise, pred_data)
                 fake = fake + pred_data
                 fake = fake.data.cpu().numpy()
                 fake = fake.reshape(opt.mgcDim, -1)
                 fake = fake[:,rand_int:rand_int+60]
-                  
+
                 pred = pred_data.data.cpu().numpy()
                 pred = pred.reshape(opt.mgcDim, -1)
                 pred = pred[:,rand_int:rand_int+60]
-                    
+
                 real = real_data.cpu().numpy()
                 real = real.reshape(opt.mgcDim, -1)
                 real = real[:,rand_int:rand_int+60]
                 plot_feats(real, pred, fake,  epoch, i, opt.outf)
-                
+
                 batch_data = []
-                
-                del errD_fake, errD_real, errG, real_data, pred_data, 
+
+                del errD_fake, errD_real, errG, real_data, pred_data,
                 del noise, real_data_crop, fake, fake_crop, output, errD
 
         # do checkpointing
@@ -168,7 +168,7 @@ def test(netG, opt):
             generated_pulses = generated_pulses.reshape(ac_data.size(0), -1)
             out_file = os.path.join(test_dir, fname + '.pls')
             with open(out_file, 'wb') as fid:
-                generated_pulses.tofile(fid)    
+                generated_pulses.tofile(fid)
 
 
 if __name__ == "__main__":
@@ -206,10 +206,10 @@ if __name__ == "__main__":
 
     with open(y_files_list_file, 'r') as fid:
         y_files_list = [l.strip() for l in fid.readlines()]
-    
 
-    data_loader = get_loader(x_files_list, y_files_list, 
-                            in_dim, out_dim, 1, True, 0)  
+
+    data_loader = get_loader(x_files_list, y_files_list,
+                            in_dim, out_dim, 1, True, 0)
 
     # prepare the output directories
     try:
@@ -232,16 +232,18 @@ if __name__ == "__main__":
     cudnn.enabled = True
     cudnn.benchmark = True
 
-    # define the generator 
+    # define the generator
     netG = define_netG(in_ch=2)
     if opt.netG != '':
         netG.load_state_dict(torch.load(opt.netG))
+        print('Use chekpoint:{}'.format(opt.netG))
     print(netG)
 
     # define the discriminator
     netD = define_netD()
     if opt.netD != '':
         netD.load_state_dict(torch.load(opt.netD))
+        print('Use chekpoint:{}'.format(opt.netD))
     print(netD)
 
     if opt.mode == 'train':
