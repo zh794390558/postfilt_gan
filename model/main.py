@@ -2,6 +2,7 @@ from __future__ import print_function
 import argparse
 import os
 import random
+import shutil
 #import numpy as np
 
 import torch
@@ -132,6 +133,13 @@ def test(netG, opt):
     print('mode: {}'.format(opt.mode))
 
     test_dir = opt.testdata_dir
+    output_dir = os.path.join(test_dir, 'out')
+    shutil.rmtree(output_dir, ignore_errors=True)
+    try:
+        os.makedirs(output_dir)
+    except OSError:
+        pass
+
     for f in os.listdir(test_dir):
         fname, ext = os.path.splitext(f)
         if ext == '.mcep':
@@ -152,7 +160,8 @@ def test(netG, opt):
             generated_pulses = netG(noise, ac_data)
             generated_pulses = generated_pulses.data.cpu().numpy()
             generated_pulses = generated_pulses.reshape(ac_data.size(0), -1)
-            out_file = os.path.join(test_dir, fname + '.pls')
+
+            out_file = os.path.join(output_dir, fname + ext)
             with open(out_file, 'wb') as fid:
                 generated_pulses.tofile(fid)
 

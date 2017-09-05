@@ -104,4 +104,6 @@ ENV/
 .mypy_cache/
 
 
-model/test/
+test/
+*.wav
+*.mcep

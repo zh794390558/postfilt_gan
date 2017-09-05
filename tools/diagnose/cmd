@@ -1,0 +1,6 @@
+x2x +f +a41 140079.cep >140079.cep.txt
+
+./x2x +a +f 140079.mcep.cut.txt > 140079.mcep.cut.mcep
+
+
+./straight_mceplsf -f 22050 -mcep -pow -order 40 -shift 5 -f0file 140079.f0 -syn 140079.mcep.cut.mcep 140079.wav 
