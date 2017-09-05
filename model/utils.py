@@ -21,4 +21,8 @@ def read_binary_file(file, dim=1):
     data = np.fromfile(f, dtype=np.float32)
     assert data.shape[0] % dim == 0.
     data = data.reshape(-1, dim)
-    return data, data.shape[0]
+    # dim x frame
+    data = data.T
+    # batch x channel x dim x frame
+    data = data[np.newaxis, np.newaxis, :, :]
+    return data, data.shape[-1]

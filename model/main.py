@@ -41,7 +41,7 @@ def train(netD, netG, data_loader, opt):
             # discard the data if the size less than opt.mgcDim frames
             if data[0].size(-1) <= opt.mgcDim:
                 continue
-            real_data, pred_data = data
+            real_data, pred_data = data # NAT, SYN
 
             #################################
             # (1) Updata D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -99,21 +99,25 @@ def train(netD, netG, data_loader, opt):
 
             if i % opt.logInterval == 0:
                 print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                    %(epoch, opt.niter, i, len(data_loader),
-                errD, errG.data[0], D_x, D_G_z1, D_G_z2))
+                    %(epoch, opt.niter, i, len(data_loader), errD, errG.data[0], D_x, D_G_z1, D_G_z2))
+
+                # G
                 fake = netG(noise, pred_data)
                 fake = fake + pred_data
                 fake = fake.data.cpu().numpy()
                 fake = fake.reshape(opt.mgcDim, -1)
-                fake = fake[:,rand_int:rand_int+60]
+                fake = fake[:,rand_int:rand_int+opt.mgcDim]
 
+                # SYN
                 pred = pred_data.data.cpu().numpy()
                 pred = pred.reshape(opt.mgcDim, -1)
-                pred = pred[:,rand_int:rand_int+60]
+                pred = pred[:,rand_int:rand_int+opt.mgcDim]
 
+                # NAT
                 real = real_data.cpu().numpy()
                 real = real.reshape(opt.mgcDim, -1)
-                real = real[:,rand_int:rand_int+60]
+                real = real[:,rand_int:rand_int+opt.mgcDim]
+
                 plot_feats(real, pred, fake,  epoch, i, opt.outf)
 
             #del errD_fake, errD_real, errG, real_data, pred_data,
@@ -125,21 +129,26 @@ def train(netD, netG, data_loader, opt):
 
 def test(netG, opt):
     assert opt.netG != ''
+    print('mode: {}'.format(opt.mode))
+
     test_dir = opt.testdata_dir
     for f in os.listdir(test_dir):
         fname, ext = os.path.splitext(f)
-        if ext == '.cmp':
-            print(fname)
+        if ext == '.mcep':
+            print(fname + ext)
             cmp_file = os.path.join(test_dir, f)
-            ac_data = read_binary_file(cmp_file, dim=41)
-            print(ac_data.size())
+
+            ac_data, nframe = read_binary_file(cmp_file, dim=41)
             ac_data = torch.FloatTensor(ac_data)
-            noise = torch.FloatTensor(ac_data.size(0), nz)
+            print(ac_data.size())
+            noise = torch.FloatTensor(ac_data.size())
             if opt.cuda:
+                netG.cuda()
                 ac_data, noise = ac_data.cuda(), noise.cuda()
             ac_data = Variable(ac_data)
             noise = Variable(noise)
             noise.data.normal_(0, 1)
+
             generated_pulses = netG(noise, ac_data)
             generated_pulses = generated_pulses.data.cpu().numpy()
             generated_pulses = generated_pulses.reshape(ac_data.size(0), -1)
@@ -226,7 +235,7 @@ if __name__ == "__main__":
     netD = define_netD(opt.ngpu)
     if opt.netD != '':
         netD.load_state_dict(torch.load(opt.netD))
-        print('Use chekpoint:{}'.format(opt.netD))
+        print('Use chekpoint:{} device: {}'.format(opt.netD, netD.device))
     print(netD)
 
     if opt.mode == 'train':

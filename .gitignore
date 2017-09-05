@@ -104,3 +104,4 @@ ENV/
 .mypy_cache/
 
 
+model/test/
